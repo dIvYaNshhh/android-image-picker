@@ -22,10 +22,10 @@ task androidJavadocs(type: Javadoc) {
     exclude '**/R.html', '**/R.*.html', '**/index.html'
 }
 
-task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
-    archiveClassifier.set('javadoc')
-    from androidJavadocs.destinationDir
-}
+//task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+//    archiveClassifier.set('javadoc')
+//    from androidJavadocs.destinationDir
+//}
 
 task androidSourcesJar(type: Jar) {
     archiveClassifier.set('sources')
@@ -43,7 +43,7 @@ afterEvaluate {
                 from components.release
 
                 // Adds javadocs and sources as separate jars.
-                artifact androidJavadocsJar
+                //artifact androidJavadocsJar
                 artifact androidSourcesJar
 
                 // You can customize attributes of the publication here or in module's build.gradle file.
