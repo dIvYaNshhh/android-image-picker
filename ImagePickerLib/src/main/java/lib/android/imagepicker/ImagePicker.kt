@@ -22,6 +22,7 @@ interface ImagePickerContract {
     var imagePickerHelper: ImagePickerHelper
     fun takePhotoFromCamera()
     fun takePhotoFromGallery()
+    fun setImageSelectedListener(listener: ImagePicker.OnImageSelectedListener)
     fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -44,10 +45,6 @@ class ImagePicker(private val context: AppCompatActivity, private val applicatio
     private var cameraOrGalleryActivityLauncher: ActivityResultLauncher<Intent>
 
     init {
-        if (context is OnImageSelectedListener) {
-            onImageSelectedListener = context
-        }
-
         cameraOrGalleryActivityLauncher =
             context.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
                 if (it.resultCode == Activity.RESULT_OK) {
@@ -96,6 +93,10 @@ class ImagePicker(private val context: AppCompatActivity, private val applicatio
         cameraOrGalleryActivityLauncher.launch(takePhotoFromGalleryIntent)
     }
 
+    override fun setImageSelectedListener(listener: OnImageSelectedListener) {
+        this.onImageSelectedListener = listener
+    }
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -119,7 +120,9 @@ class ImagePicker(private val context: AppCompatActivity, private val applicatio
     private fun handleImageRequest(data: Intent?) {
         val exceptionHandler = CoroutineExceptionHandler { _, t ->
             t.printStackTrace()
-            onImageSelectedListener.onImageSelectFailure()
+            if (::onImageSelectedListener.isInitialized){
+                onImageSelectedListener.onImageSelectFailure()
+            }
             Toast.makeText(
                 context,
                 t.localizedMessage ?: context.getString(R.string.some_err),
@@ -139,9 +142,13 @@ class ImagePicker(private val context: AppCompatActivity, private val applicatio
             imageUri = Uri.fromFile(File(queryImageUrl))
 
             if (queryImageUrl.isNotEmpty()) {
-                onImageSelectedListener.onImageSelectSuccess(queryImageUrl)
+                if (::onImageSelectedListener.isInitialized){
+                    onImageSelectedListener.onImageSelectSuccess(queryImageUrl)
+                }
             } else {
-                onImageSelectedListener.onImageSelectFailure()
+                if (::onImageSelectedListener.isInitialized){
+                    onImageSelectedListener.onImageSelectFailure()
+                }
             }
         }
     }

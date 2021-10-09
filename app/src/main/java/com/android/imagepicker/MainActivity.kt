@@ -18,6 +18,8 @@ class MainActivity : AppCompatActivity(), ImagePicker.OnImageSelectedListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         imagePicker = ImagePicker(this, BuildConfig.APPLICATION_ID)
+        imagePicker.setImageSelectedListener(this)
+
         imageView = findViewById(R.id.image)
 
         findViewById<Button>(R.id.take_photo_from_camera).setOnClickListener {
