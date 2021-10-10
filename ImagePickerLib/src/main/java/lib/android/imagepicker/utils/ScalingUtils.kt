@@ -1,11 +1,12 @@
-package com.shashankpednekar.imagepickercompression.utils
+package lib.android.imagepicker.utils
 
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.*
+import android.media.ExifInterface
 import android.net.Uri
-import lib.android.imagepicker.utils.getBitmapFromUri
 import java.io.File
+
 
 /**
  * Utility function for decoding an image resource. The decoded bitmap will
@@ -43,7 +44,8 @@ fun decodeFile(
     uri: Uri,
     dstWidth: Int,
     dstHeight: Int,
-    scalingLogic: ScalingLogic
+    scalingLogic: ScalingLogic,
+    isFromCamera:Boolean = false
 ): Bitmap? {
     val options = BitmapFactory.Options()
     options.inJustDecodeBounds = true
@@ -57,8 +59,11 @@ fun decodeFile(
         dstHeight,
         scalingLogic
     )
-
-    return context.getBitmapFromUri(uri, options)
+    return if (isFromCamera){
+        updateImageOrientation(context.getBitmapFromUri(uri, options), uri.path)
+    } else {
+        context.getBitmapFromUri(uri, options)
+    }
 }
 
 /**
@@ -89,7 +94,6 @@ fun createScaledBitmap(
         Bitmap.createBitmap(dstRect.width(), dstRect.height(), Bitmap.Config.ARGB_8888)
     val canvas = Canvas(scaledBitmap)
     canvas.drawBitmap(unscaledBitmap, srcRect, dstRect, Paint(Paint.FILTER_BITMAP_FLAG))
-
     return scaledBitmap
 }
 
@@ -257,4 +261,46 @@ fun Context.getImageHgtWdt(uri: Uri): Pair<Int, Int> {
     }
 
     return Pair(actualHgt.toInt(), actualWdt.toInt())
+}
+
+fun updateImageOrientation(bitmap: Bitmap?, photoPath: String?): Bitmap? {
+    if (photoPath == null)
+        return null
+
+    val ei = ExifInterface(photoPath)
+    val orientation = ei.getAttributeInt(
+        ExifInterface.TAG_ORIENTATION,
+        ExifInterface.ORIENTATION_UNDEFINED
+    )
+
+    var rotatedBitmap: Bitmap? = null
+    when (orientation) {
+        ExifInterface.ORIENTATION_ROTATE_90 -> {
+            rotatedBitmap = rotateImage(bitmap, 90F)
+        }
+
+        ExifInterface.ORIENTATION_ROTATE_180 -> {
+            rotatedBitmap = rotateImage(bitmap, 180F)
+        }
+
+        ExifInterface.ORIENTATION_ROTATE_270 -> {
+            rotatedBitmap = rotateImage(bitmap, 270F)
+        }
+
+        ExifInterface.ORIENTATION_NORMAL -> {
+            rotatedBitmap = bitmap
+        }
+    }
+    return rotatedBitmap
+}
+
+fun rotateImage(source: Bitmap?, angle: Float): Bitmap? {
+    if (source == null)
+        return null
+    val matrix = Matrix()
+    matrix.postRotate(angle)
+    return Bitmap.createBitmap(
+        source, 0, 0, source.width, source.height,
+        matrix, true
+    )
 }

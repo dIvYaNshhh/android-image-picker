@@ -134,7 +134,7 @@ class ImagePicker(private val context: AppCompatActivity, private val applicatio
             if (data?.data != null) {     //Photo from gallery
                 imageUri = data.data
                 queryImageUrl = imageUri?.path!!
-                queryImageUrl = context.compressImageFile(queryImageUrl, false, imageUri!!)
+                queryImageUrl = context.compressImageFile(queryImageUrl, shouldOverride = false, imageUri!!)
             } else {
                 queryImageUrl = imgPath
                 context.compressImageFile(queryImageUrl, uri = imageUri!!)

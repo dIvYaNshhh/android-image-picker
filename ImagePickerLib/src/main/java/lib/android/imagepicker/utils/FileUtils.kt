@@ -6,7 +6,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
-import com.shashankpednekar.imagepickercompression.utils.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -28,21 +27,16 @@ suspend fun Activity.compressImageFile(
 
         try {
             val (hgt, wdt) = getImageHgtWdt(uri)
-            try {
-                val bm = getBitmapFromUri(uri)
-                Log.d(tag, "original bitmap height${bm?.height} width${bm?.width}")
-                Log.d(tag, "Dynamic height$hgt width$wdt")
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+
             // Part 1: Decode image
-            val unscaledBitmap = decodeFile(this@compressImageFile, uri, wdt, hgt, ScalingLogic.FIT)
+            val unscaledBitmap =
+                decodeFile(this@compressImageFile, uri, wdt, hgt, ScalingLogic.FIT, shouldOverride)
             if (unscaledBitmap != null) {
-                if (!(unscaledBitmap.width <= 800 && unscaledBitmap.height <= 800)) {
+                scaledBitmap = if (!(unscaledBitmap.width <= 800 && unscaledBitmap.height <= 800)) {
                     // Part 2: Scale image
-                    scaledBitmap = createScaledBitmap(unscaledBitmap, wdt, hgt, ScalingLogic.FIT)
+                    createScaledBitmap(unscaledBitmap, wdt, hgt, ScalingLogic.FIT)
                 } else {
-                    scaledBitmap = unscaledBitmap
+                    unscaledBitmap
                 }
             }
 
