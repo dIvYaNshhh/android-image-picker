@@ -42,6 +42,15 @@ class MainActivity : AppCompatActivity(), ImagePicker.OnImageSelectedListener {
         }
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        imagePicker.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
     override fun onImageSelectFailure() {
         Toast.makeText(this, "Something went wrong", Toast.LENGTH_SHORT).show()
     }
